@@ -3,8 +3,10 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM
+from keras.layers import Flatten, TimeDistributed
 from keras.callbacks import ModelCheckpoint
 from keras.utils import np_utils
+
 
 filename = "wonderland.txt"
 raw_text = open(filename).read()
@@ -17,7 +19,7 @@ n_vocab = len(chars)
 print "Total characters: ", n_chars
 print "Total vocab: ", n_vocab
 
-seq_length = 100
+seq_length = 150
 dataX = []
 dataY = []
 for i in range(0, n_chars - seq_length, 1):
@@ -30,8 +32,6 @@ for i in range(0, n_chars - seq_length, 1):
     dataY.append(chars_to_int[seq_out])
 
 n_patterns = len(dataX)
-assert len(dataX) == len(dataY)
-assert n_patterns == n_chars - 100
 print "Total Patterns: ", n_patterns
 
 X = numpy.reshape(dataX, (n_patterns, seq_length, 1))
@@ -39,8 +39,12 @@ X = X/float(n_vocab) #normalize so all values are 0 to 1
 y = np_utils.to_categorical(dataY) # put all values into unique points
 
 model = Sequential()
-model.add(LSTM(256, input_shape=(X.shape[1], X.shape[2])))
+model.add(LSTM(256, input_shape=(X.shape[1], X.shape[2]), return_sequences=True, recurrent_dropout=0.2))
+# --Bigger--
+model.add(LSTM(256, recurrent_dropout=0.2, return_sequences = True))
+model.add(LSTM(256))
 model.add(Dropout(0.2))
+# --Bigger--
 model.add(Dense(y.shape[1], activation='softmax'))
 model.compile(loss="categorical_crossentropy", optimizer="adam")
 model.summary()
