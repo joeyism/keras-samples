@@ -1,10 +1,17 @@
 import numpy
+import os
+import fnmatch
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM
 from keras.callbacks import ModelCheckpoint
 from keras.utils import np_utils
+
+hdf5files = []
+for file in os.listdir('.'):
+    if fnmatch.fnmatch(file, '*.hdf5'):
+        hdf5files.append(file)
 
 filename = "wonderland.txt"
 raw_text = open(filename).read()
@@ -45,9 +52,13 @@ model.add(Dense(y.shape[1], activation='softmax'))
 model.compile(loss="categorical_crossentropy", optimizer="adam")
 model.summary()
 
-filepath="weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
-checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
-callbacks_list = [checkpoint]
+#filepath="weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
+callbacks_list = []
+for filepath in hdf5files:
+    checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
+    callbacks_list.append(checkpoint)
+
+print callbacks_list
 
 print "fitting"
-model.fit(X, y, epochs=20, batch_size=128, callbacks=callbacks_list)
+model.fit(X, y, epochs=20, batch_size=128, callbacks=callbacks_list, initial_epoch=len(callbacks_list-1))
