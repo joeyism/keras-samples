@@ -1,18 +1,11 @@
 import numpy
-import os
-import fnmatch
+import time
+from keras.callbacks import ModelCheckpoint
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM
-from keras.layers import Flatten, TimeDistributed
-from keras.callbacks import ModelCheckpoint
 from keras.utils import np_utils
-
-hdf5files = []
-for file in os.listdir('.'):
-    if fnmatch.fnmatch(file, '*.hdf5'):
-        hdf5files.append(file)
 
 filename = "wonderland.txt"
 raw_text = open(filename).read()
@@ -21,7 +14,7 @@ chars = sorted(list(set(raw_text))) # unique characters
 chars_to_int = dict((c,i) for i,c in enumerate(chars)) # puts them into tuples
 
 n_chars = len(raw_text)
-n_vocab = len(chars)
+n_vocab = len(chars) # no of unique characters
 print "Total characters: ", n_chars
 print "Total vocab: ", n_vocab
 
@@ -52,16 +45,30 @@ model.add(LSTM(256))
 model.add(Dropout(0.2))
 # --Bigger--
 model.add(Dense(y.shape[1], activation='softmax'))
+
+weights_filename = "weights-improvement-19-1.9035.hdf5"
+model.load_weights(weights_filename)
 model.compile(loss="categorical_crossentropy", optimizer="adam")
 model.summary()
 
-#filepath="weights-improvement-{epoch:02d}-{loss:.4f}.hdf5"
-callbacks_list = []
-for filepath in hdf5files:
-    checkpoint = ModelCheckpoint(filepath, monitor='loss', verbose=1, save_best_only=True, mode='min')
-    callbacks_list.append(checkpoint)
+int_to_char = dict((i,c) for i,c in enumerate(chars)) # converts the output back to letters
 
-print callbacks_list
+start = numpy.random.randint(0, len(dataX)-1)
+pattern = dataX[start]
+print pattern
 
-print "fitting"
-model.fit(X, y, epochs=20, batch_size=128, callbacks=callbacks_list, initial_epoch=len(callbacks_list-1))
+for i in range(1000):
+    seq_in = [int_to_char[value] for value in pattern]
+    x = numpy.reshape(pattern, (1, len(pattern), 1)) # puts then in an array within an array
+    x = x / float(n_vocab) # normalizes
+    prediction = model.predict(x, verbose=0)
+    index = numpy.argmax(prediction)
+    result_letter = int_to_char[index]
+
+    print "".join(seq_in), "".join([">",result_letter,"<"])
+
+    pattern.append(index)
+    pattern = pattern[1:len(pattern)]
+    print "\n-------------\n"
+    time.sleep(.5)
+
