@@ -16,10 +16,10 @@ num_to_char = {i:char for i, char in enumerate(unique_chars)}
 char_to_num = {char:i for i, char in enumerate(unique_chars)}
 
 no_of_features = no_unique_chars
-length_of_sequence = 20
-no_of_hidden = 90
+length_of_sequence = 100
+no_of_hidden = 700
 no_of_layers = 10
-generate_text_length = 50
+generate_text_length = 100
 batch_size = 50
 
 X = np.zeros((int(len(data)/length_of_sequence), length_of_sequence, no_of_features))
@@ -56,7 +56,7 @@ model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
 # training
 def generate_text(model, generate_text_length):
     generated_num = [np.random.randint(no_unique_chars)]
-    generated_char = [num_to_char[first_generated_num[-1]]]
+    generated_char = [num_to_char[generated_num[-1]]]
     X = np.zeros((1, generate_text_length, no_unique_chars))
     for i in range(generate_text_length):
         X[0][i][generated_num[-1]] = 1
