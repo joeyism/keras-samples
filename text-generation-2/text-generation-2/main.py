@@ -15,6 +15,9 @@ no_unique_chars = len(unique_chars)
 num_to_char = {i:char for i, char in enumerate(unique_chars)}
 char_to_num = {char:i for i, char in enumerate(unique_chars)}
 
+np.save("num_to_char.npy", num_to_char)
+np.save("char_to_num.npy", char_to_num)
+
 no_of_features = no_unique_chars
 length_of_sequence = 100
 no_of_hidden = 700
